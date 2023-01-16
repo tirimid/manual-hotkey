@@ -1,6 +1,6 @@
-# manual-hot-key
+# manual-hotkey
 ## Introduction
-An AutoHotKey alternative for Linux with its own scripting language. Since AHK
+An AutoHotkey alternative for Linux with its own scripting language. Since AHK
 doesn't exist for Linux (and I don't like any of the alternatives), I decided to
 make my own interpretation of a programmable macro system.
 
