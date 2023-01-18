@@ -7,5 +7,5 @@ OUT_BIN_NAME := manual-hot-key
 CC := gcc
 LD := gcc
 
-CFLAGS = -I$(INC_DIR) -c -std=c89 -pedantic
+CFLAGS = -I$(INC_DIR) -c -std=c99 -pedantic
 LDFLAGS =
