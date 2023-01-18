@@ -2,7 +2,7 @@ SRC_DIR := src
 INC_DIR := inc
 LIB_DIR := lib
 
-OUT_BIN_NAME := manual-hot-key
+OUT_BIN_NAME := manual-hotkey
 
 CC := gcc
 LD := gcc
