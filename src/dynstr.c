@@ -28,11 +28,8 @@ void dynstr_push_c_str(struct dynstr *s, char const *cs)
 
 void dynstr_push_c_str_not_nt(struct dynstr *s, char const *cs, char term)
 {
-    for (size_t i = 0; i < strlen(cs); ++i) {
-        if (cs[i] == term)
-            break;
+    for (size_t i = 0; cs[i] != term; ++i)
         dynstr_push_char(s, cs[i]);
-    }
 }
 
 void dynstr_push_char(struct dynstr *s, char c)

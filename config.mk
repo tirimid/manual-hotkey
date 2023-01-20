@@ -8,4 +8,4 @@ CC := gcc
 LD := gcc
 
 CFLAGS = -I$(INC_DIR) -c -std=c99 -pedantic
-LDFLAGS =
+LDFLAGS = -lpthread
