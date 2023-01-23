@@ -12,4 +12,9 @@ bool keys_is_pressed(uint16_t code);
 void keys_set_press_handler(uint16_t code, void (*handler)(void));
 void keys_set_release_handler(uint16_t code, void (*handler)(void));
 
+void keys_press(uint16_t code);
+void keys_release(uint16_t code);
+void keys_type_char(char ch);
+void keys_type_string(char const *str);
+
 #endif

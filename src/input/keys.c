@@ -1,4 +1,4 @@
-#include "keys.h"
+#include "input/keys.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -10,8 +10,8 @@
 #include <linux/input.h>
 #include <pthread.h>
 
-#include "dynstr.h"
-#include "log.h"
+#include "util/dynstr.h"
+#include "util/log.h"
 
 #define DEVICES_FILE "/proc/bus/input/devices"
 #define DEVICES_BUF_SIZE 4096
@@ -19,6 +19,7 @@
 #define DEVICE_EV "120013"
 #define KEY_DATA_BUF_SIZE ((UINT16_MAX + 1) / 8)
 #define KEY_HANDLER_BUF_SIZE ((UINT16_MAX + 1) * sizeof(void (*)(void)))
+#define KEY_IS_SHIFTED (1 << 15)
 
 static uint8_t *key_data;
 static void (**press_handlers)(void);
@@ -61,7 +62,7 @@ static int open_key_input(void)
 
     char *evf = dynstr_as_c_str(&event_file);
     evf[event_file.len - 1] = '\0'; // this is necessary for some reason.
-    rc = open(evf, O_RDONLY);
+    rc = open(evf, O_RDWR);
     
     free(evf);
     dynstr_destroy(&event_file);
@@ -158,3 +159,51 @@ void keys_set_release_handler(uint16_t code, void (*handler)(void))
 {
     release_handlers[code] = handler;
 }
+
+void keys_press(uint16_t code)
+{
+    struct input_event ie = {
+        .code = code,
+        .type = EV_KEY,
+        .value = 1,
+    };
+
+    write(key_fd, &ie, sizeof(ie));
+}
+
+void keys_release(uint16_t code)
+{
+    struct input_event ie = {
+        .code = code,
+        .type = EV_KEY,
+        .value = 0,
+    };
+
+    write(key_fd, &ie, sizeof(ie));
+}
+
+#if 0
+void keys_type_char(char ch)
+{
+    uint16_t code;
+    if (ch > 127 || (code = char_code_lookup[ch]) == KEY_RESERVED) {
+        WARNING_F("cannot type character: '%c' / %x!", code, code);
+        return;
+    }
+
+    if ((code & KEY_IS_SHIFTED) > 0)
+        keys_press(KEY_LEFTSHIFT);
+    
+    keys_press(code);
+    keys_release(code);
+
+    if ((code & KEY_IS_SHIFTED) > 0)
+        keys_release(KEY_LEFTSHIFT);
+}
+
+void keys_type_string(char const *str)
+{
+    for (size_t i = 0; i < strlen(str); ++i)
+        keys_type_char(str[i]);
+}
+#endif

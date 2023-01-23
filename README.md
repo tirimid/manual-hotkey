@@ -11,4 +11,4 @@ make my own interpretation of a programmable macro system.
 ## Contribution Guidelines
 I will only accept pull requests if they contain features / fixes which I like.
 In general, feel free to fork the repository and create your own version of
-manual-hot-key. If you know me in person, feel free to contribute ideas.
+manual-hotkey. If you know me in person, feel free to contribute ideas.
