@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 struct dynstr {
-    char *data;
-    size_t len, cap;
+        char *data;
+        size_t len, cap;
 };
 
 struct dynstr dynstr_create(void);

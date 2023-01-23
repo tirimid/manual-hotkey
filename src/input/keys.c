@@ -30,180 +30,180 @@ static pthread_t keys_thread;
 
 static int open_key_input(void)
 {
-    char *devs_conts = NULL;
-    int devs_fd = open(DEVICES_FILE, O_RDONLY), rc = -1;
+        char *devs_conts = NULL;
+        int devs_fd = open(DEVICES_FILE, O_RDONLY), rc = -1;
 
-    if (devs_fd == -1)
-        goto exit;
+        if (devs_fd == -1)
+                goto exit;
 
-    devs_conts = malloc(DEVICES_BUF_SIZE);
-    devs_conts[DEVICES_BUF_SIZE - 1] = '\0';
-    if (read(devs_fd, devs_conts, DEVICES_BUF_SIZE - 1) == -1)
-        goto exit;
+        devs_conts = malloc(DEVICES_BUF_SIZE);
+        devs_conts[DEVICES_BUF_SIZE - 1] = '\0';
+        if (read(devs_fd, devs_conts, DEVICES_BUF_SIZE - 1) == -1)
+                goto exit;
 
-    char *ev = devs_conts, *handlers;
-    do {
-        handlers = strstr(ev, "Handlers=");
-        ev = strstr(handlers, "EV=");
-        if (strncmp(ev + 3, DEVICE_EV, strlen(DEVICE_EV)) == 0)
-            break;
-    } while (handlers != NULL && ev != NULL);
+        char *ev = devs_conts, *handlers;
+        do {
+                handlers = strstr(ev, "Handlers=");
+                ev = strstr(handlers, "EV=");
+                if (strncmp(ev + 3, DEVICE_EV, strlen(DEVICE_EV)) == 0)
+                        break;
+        } while (handlers != NULL && ev != NULL);
 
-    if (handlers == NULL || ev == NULL)
-        goto exit;
+        if (handlers == NULL || ev == NULL)
+                goto exit;
     
-    char *event = strstr(handlers, "event");
-    if (event == NULL)
-        goto exit;
+        char *event = strstr(handlers, "event");
+        if (event == NULL)
+                goto exit;
 
-    struct dynstr event_file = dynstr_create();
-    dynstr_push_c_str(&event_file, INPUT_DIR);
-    dynstr_push_c_str_not_nt(&event_file, event, '\n');
+        struct dynstr event_file = dynstr_create();
+        dynstr_push_c_str(&event_file, INPUT_DIR);
+        dynstr_push_c_str_not_nt(&event_file, event, '\n');
 
-    char *evf = dynstr_as_c_str(&event_file);
-    evf[event_file.len - 1] = '\0'; // this is necessary for some reason.
-    rc = open(evf, O_RDWR);
+        char *evf = dynstr_as_c_str(&event_file);
+        evf[event_file.len - 1] = '\0'; // this is necessary for some reason.
+        rc = open(evf, O_RDWR);
     
-    free(evf);
-    dynstr_destroy(&event_file);
+        free(evf);
+        dynstr_destroy(&event_file);
     
 exit:
-    close(devs_fd);
-    if (devs_conts != NULL)
-        free(devs_conts);
+        close(devs_fd);
+        if (devs_conts != NULL)
+                free(devs_conts);
 
-    return rc;
+        return rc;
 }
 
 static void *main_loop(void *args)
 {
-    while (running) {
-        struct input_event ie;
-        read(key_fd, &ie, sizeof(ie));
+        while (running) {
+                struct input_event ie;
+                read(key_fd, &ie, sizeof(ie));
         
-        if (ie.type != EV_KEY)
-            continue;
+                if (ie.type != EV_KEY)
+                        continue;
     
-        size_t byte = ie.code / 8, bit = ie.code % 8;
-        uint8_t *datum = &key_data[byte];
-        *datum &= ~(1 << bit);
-        *datum |= (ie.value > 0) << bit;
+                size_t byte = ie.code / 8, bit = ie.code % 8;
+                uint8_t *datum = &key_data[byte];
+                *datum &= ~(1 << bit);
+                *datum |= (ie.value > 0) << bit;
 
-        if (ie.value == 0 && release_handlers[ie.code] != NULL)
-            release_handlers[ie.code]();
-        else if (ie.value == 1 && press_handlers[ie.code] != NULL)
-            press_handlers[ie.code]();
-    }
+                if (ie.value == 0 && release_handlers[ie.code] != NULL)
+                        release_handlers[ie.code]();
+                else if (ie.value == 1 && press_handlers[ie.code] != NULL)
+                        press_handlers[ie.code]();
+        }
     
-    return NULL;
+        return NULL;
 }
 
 void keys_init(void)
 {
-    if (initialized)
-        ERROR("keys is already initialized!");
+        if (initialized)
+                ERROR("keys is already initialized!");
 
-    if ((key_fd = open_key_input()) == -1)
-        ERROR("failed to get keyboard event file descriptor!");
+        if ((key_fd = open_key_input()) == -1)
+                ERROR("failed to get keyboard event file descriptor!");
 
-    key_data = malloc(KEY_DATA_BUF_SIZE);
-    press_handlers = malloc(KEY_HANDLER_BUF_SIZE);
-    release_handlers = malloc(KEY_HANDLER_BUF_SIZE);
-    memset(key_data, 0, KEY_DATA_BUF_SIZE);
-    memset(press_handlers, 0, KEY_HANDLER_BUF_SIZE);
-    memset(release_handlers, 0, KEY_HANDLER_BUF_SIZE);
+        key_data = malloc(KEY_DATA_BUF_SIZE);
+        press_handlers = malloc(KEY_HANDLER_BUF_SIZE);
+        release_handlers = malloc(KEY_HANDLER_BUF_SIZE);
+        memset(key_data, 0, KEY_DATA_BUF_SIZE);
+        memset(press_handlers, 0, KEY_HANDLER_BUF_SIZE);
+        memset(release_handlers, 0, KEY_HANDLER_BUF_SIZE);
 
-    running = true;
-    int rc = pthread_create(&keys_thread, NULL, main_loop, NULL);
-    if (rc != 0)
-        ERROR_F("failed to create keys thread! error %d", rc);
+        running = true;
+        int rc = pthread_create(&keys_thread, NULL, main_loop, NULL);
+        if (rc != 0)
+                ERROR_F("failed to create keys thread! error %d", rc);
 
-    initialized = true;
+        initialized = true;
 }
 
 void keys_quit(void)
 {
-    if (!initialized)
-        ERROR("cannot quit keys while uninitialized!");
+        if (!initialized)
+                ERROR("cannot quit keys while uninitialized!");
 
-    running = false;
-    int rc = pthread_join(keys_thread, NULL);
-    if (rc != 0)
-        ERROR_F("failed to join keys thread! error %d", rc);
+        running = false;
+        int rc = pthread_join(keys_thread, NULL);
+        if (rc != 0)
+                ERROR_F("failed to join keys thread! error %d", rc);
     
-    free(key_data);
-    free(press_handlers);
-    free(release_handlers);
-    close(key_fd);
-    initialized = false;
+        free(key_data);
+        free(press_handlers);
+        free(release_handlers);
+        close(key_fd);
+        initialized = false;
 }
 
 bool keys_is_initialized(void)
 {
-    return initialized;
+        return initialized;
 }
 
 bool keys_is_pressed(uint16_t code)
 {
-    size_t byte = code / 8, bit = code % 8;
-    uint8_t datum = key_data[byte];
-    return (datum & 1 << bit) > 0;
+        size_t byte = code / 8, bit = code % 8;
+        uint8_t datum = key_data[byte];
+        return (datum & 1 << bit) > 0;
 }
 
 void keys_set_press_handler(uint16_t code, void (*handler)(void))
 {
-    press_handlers[code] = handler;
+        press_handlers[code] = handler;
 }
 
 void keys_set_release_handler(uint16_t code, void (*handler)(void))
 {
-    release_handlers[code] = handler;
+        release_handlers[code] = handler;
 }
 
 void keys_press(uint16_t code)
 {
-    struct input_event ie = {
-        .code = code,
-        .type = EV_KEY,
-        .value = 1,
-    };
+        struct input_event ie = {
+                .code = code,
+                .type = EV_KEY,
+                .value = 1,
+        };
 
-    write(key_fd, &ie, sizeof(ie));
+        write(key_fd, &ie, sizeof(ie));
 }
 
 void keys_release(uint16_t code)
 {
-    struct input_event ie = {
-        .code = code,
-        .type = EV_KEY,
-        .value = 0,
-    };
+        struct input_event ie = {
+                .code = code,
+                .type = EV_KEY,
+                .value = 0,
+        };
 
-    write(key_fd, &ie, sizeof(ie));
+        write(key_fd, &ie, sizeof(ie));
 }
 
 #if 0
 void keys_type_char(char ch)
 {
-    uint16_t code;
-    if (ch > 127 || (code = char_code_lookup[ch]) == KEY_RESERVED) {
-        WARNING_F("cannot type character: '%c' / %x!", code, code);
-        return;
-    }
+        uint16_t code;
+        if (ch > 127 || (code = char_code_lookup[ch]) == KEY_RESERVED) {
+                WARNING_F("cannot type character: '%c' / %x!", code, code);
+                return;
+        }
 
-    if ((code & KEY_IS_SHIFTED) > 0)
-        keys_press(KEY_LEFTSHIFT);
+        if ((code & KEY_IS_SHIFTED) > 0)
+                keys_press(KEY_LEFTSHIFT);
     
-    keys_press(code);
-    keys_release(code);
+        keys_press(code);
+        keys_release(code);
 
-    if ((code & KEY_IS_SHIFTED) > 0)
-        keys_release(KEY_LEFTSHIFT);
+        if ((code & KEY_IS_SHIFTED) > 0)
+                keys_release(KEY_LEFTSHIFT);
 }
 
 void keys_type_string(char const *str)
 {
-    for (size_t i = 0; i < strlen(str); ++i)
-        keys_type_char(str[i]);
+        for (size_t i = 0; i < strlen(str); ++i)
+                keys_type_char(str[i]);
 }
 #endif
