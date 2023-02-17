@@ -5,30 +5,31 @@
 #include <linux/input.h>
 
 #include "input/keys.h"
+#include "input/map.h"
 #include "util/log.h"
 
 static bool running = true;
 
-static void bskh(void)
+static void backspace_handler(void)
 {
-        if (keys_is_pressed(KEY_LEFTCTRL))
-                running = false;
-        else if (keys_is_pressed(KEY_LEFTSHIFT)) {
-                keys_press(KEY_H);
-                keys_release(KEY_H);
-        }
+    if (keys_is_pressed(KEY_LEFTCTRL))
+        running = false;
 }
 
 int main(void)
 {
-        log_init();
+    log_init();
     
-        if (getuid() != 0)
-                ERROR("you must run the program as root!");
+    if (getuid() != 0)
+        ERROR("you must run the program as root!");
 
-        keys_init();
-        keys_set_press_handler(KEY_BACKSPACE, bskh);
-        while (running);
-        keys_quit();
-        return 0;
+    map_init();
+    keys_init();
+
+    map_load_scancode_map("scancode-maps/colemak");
+    keys_type_string("hello world, this is very cool i think");
+    
+    keys_quit();
+    map_quit();
+    return 0;
 }

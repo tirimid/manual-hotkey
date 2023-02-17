@@ -1,2 +1,2 @@
-/lib/*.o
+/lib/**/*.o
 /manual-hotkey

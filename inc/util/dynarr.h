@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 struct dynarr {
-        void *data;
-        size_t size, cap, stride;
+    void *data;
+    size_t size, cap, stride;
 };
 
 struct dynarr dynarr_create(size_t stride);

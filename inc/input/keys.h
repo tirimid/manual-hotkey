@@ -6,7 +6,6 @@
 
 void keys_init(void);
 void keys_quit(void);
-bool keys_is_initialized(void);
 
 bool keys_is_pressed(uint16_t code);
 void keys_set_press_handler(uint16_t code, void (*handler)(void));
