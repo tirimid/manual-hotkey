@@ -1,4 +1,7 @@
 # manual-hotkey
+
+![manual-hotkey logo](repo-res/mhk_logo_128.png)
+
 ## Introduction
 An AutoHotkey alternative for Linux with its own scripting language. Since AHK
 doesn't exist for Linux (and I don't like any of the alternatives), I decided to
