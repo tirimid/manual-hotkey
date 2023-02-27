@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "util/dynarr.h"
+
 enum token_type {
     TOKEN_TYPE_IDENTIFIER = 0,
 
@@ -11,6 +13,9 @@ enum token_type {
     TOKEN_TYPE_FLOAT_LITERAL,
     TOKEN_TYPE_STRING_LITERAL,
     TOKEN_TYPE_CHAR_LITERAL,
+
+    // see `TOKEN_TYPE_LAST__`.
+    TOKEN_TYPE_KEYWORD_FIRST__,
 
     // keywords.
     TOKEN_TYPE_KEYWORD_INT,
@@ -28,6 +33,9 @@ enum token_type {
     TOKEN_TYPE_KEYWORD_KEY_RELEASE,
     TOKEN_TYPE_KEYWORD_INIT,
     TOKEN_TYPE_KEYWORD_QUIT,
+
+    // see `TOKEN_TYPE_LAST__`.
+    TOKEN_TYPE_KEYWORD_LAST__,
 
     // unpaired special characters.
     TOKEN_TYPE_BACKTICK,
@@ -58,7 +66,7 @@ enum token_type {
     TOKEN_TYPE_LEFT_BRACKET,
     TOKEN_TYPE_RIGHT_BRACKET,
     TOKEN_TYPE_LEFT_BRACE,
-    TOKEN_TYPE_RIGHT_BRACKET,
+    TOKEN_TYPE_RIGHT_BRACE,
     TOKEN_TYPE_LEFT_ANGLE,
     TOKEN_TYPE_RIGHT_ANGLE,
 

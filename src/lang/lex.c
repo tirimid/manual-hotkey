@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
+
+#define KEYWORD_COUNT (TOKEN_TYPE_KEYWORD_LAST__ - TOKEN_TYPE_KEYWORD_FIRST__)
 
 // quick and simple notation for defining lexer rules.
 // the following variables are provided to the block of a lexer rule:
@@ -60,9 +63,27 @@ static char const *token_type_names[TOKEN_TYPE_LAST__] = {
     "left_bracket",
     "right_bracket",
     "left_brace",
-    "right_bracket",
+    "right_brace",
     "left_angle",
     "right_angle",
+};
+
+static char const *keyword_token_types[KEYWORD_COUNT] = {
+    "int",
+    "float",
+    "char",
+    "string",
+    "key",
+    "bool",
+    "defun",
+    "return",
+    "mhk",
+    "mhkc",
+    "register",
+    "key_press",
+    "key_release",
+    "init",
+    "quit",
 };
 
 void token_destroy(struct token *tok)
