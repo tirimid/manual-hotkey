@@ -42,6 +42,7 @@ static char const *token_type_names[TOKEN_TYPE_LAST__] = {
     "key_release",
     "init",
     "quit",
+    "if",
     "backtick",
     "tilde",
     "exclamation",
@@ -89,6 +90,7 @@ static char const *keywords[KEYWORD_COUNT] = {
     "key_release",
     "init",
     "quit",
+    "if",
 };
 
 void token_destroy(struct token *tok)
