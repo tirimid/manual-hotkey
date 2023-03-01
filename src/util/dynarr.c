@@ -35,3 +35,8 @@ void const *dynarr_get(struct dynarr const *da, size_t ind)
 {
     return (uint8_t const *)da->data + ind * da->stride;
 }
+
+void *dynarr_get_mut(struct dynarr *da, size_t ind)
+{
+    return (uint8_t *)da->data + ind * da->stride;
+}

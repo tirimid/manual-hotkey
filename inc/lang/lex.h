@@ -14,11 +14,10 @@ enum token_type {
     TOKEN_TYPE_STRING_LITERAL,
     TOKEN_TYPE_CHAR_LITERAL,
 
-    // see `TOKEN_TYPE_LAST__`.
-    TOKEN_TYPE_KEYWORD_FIRST__,
+    TOKEN_TYPE_KEYWORD_FIRST__, // see `TOKEN_TYPE_LAST__`.
 
     // keywords.
-    TOKEN_TYPE_KEYWORD_INT,
+    TOKEN_TYPE_KEYWORD_INT = TOKEN_TYPE_KEYWORD_FIRST__,
     TOKEN_TYPE_KEYWORD_FLOAT,
     TOKEN_TYPE_KEYWORD_CHAR,
     TOKEN_TYPE_KEYWORD_STRING,
@@ -36,9 +35,10 @@ enum token_type {
 
     // see `TOKEN_TYPE_LAST__`.
     TOKEN_TYPE_KEYWORD_LAST__,
+    TOKEN_TYPE_SPECIAL_FIRST__ = TOKEN_TYPE_KEYWORD_LAST__,
 
     // unpaired special characters.
-    TOKEN_TYPE_BACKTICK,
+    TOKEN_TYPE_BACKTICK = TOKEN_TYPE_SPECIAL_FIRST__,
     TOKEN_TYPE_TILDE,
     TOKEN_TYPE_EXCLAMATION,
     TOKEN_TYPE_AT,
@@ -86,6 +86,9 @@ struct token {
 void token_destroy(struct token *tok);
 void token_print(struct token const *tok);
 struct token token_clone(struct token const *tok); // makes deep copy of `tok`.
+
+void print_token_dynarr(struct dynarr const *tl);
+void destroy_token_dynarr(struct dynarr *tl);
 
 // returns a `dynarr` of `token`.
 // assign output of `lex()` to a variable of type `token_list` for convenience.
