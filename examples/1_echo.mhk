@@ -1,0 +1,91 @@
+// comments begin with double forward slashes and terminate with a linefeed.
+// there are no dedicated /* multiline comments */ like in C.
+
+// all legal mhkscript types along with their internal representations:
+// `int`:    signed 64-bit integer.
+// `float`:  C double type; probably 64-bit floating point number.
+// `char`:   C char type; probably (un)signed 8-bit integer.
+// `string`: dynamic string type defined in `inc/util/dynstr.h`.
+// `key`:    unsigned 16-bit integer.
+// `bool`:   C `stdbool.h` boolean type.
+
+// a function definition takes one of the following forms:
+// ```
+// defun <function_name> {...}
+// defun <function_name> -> <return_type> {...}
+// defun <function_name>(<arg_type arg_name, ...>) {...}
+// defun <function_name>(<arg_type arg_name, ...>) -> <return_type> {...}
+// ```
+
+defun return_same(int num) -> int {
+    return num
+}
+
+defun add_both(int a, int b) -> int {
+    return a + b
+}
+
+// inbuilt functions (those provided by manual-hotkey to all files) are prefixed
+// with `mhk:`, so you can also use their identifiers for your own functions.
+// the following inbuilt functions are used for keyboard manipulation:
+// ```
+// mhk:press_key(key k) // press the key `k`.
+// mhk:release_key(key k) // release the key `k`.
+// mhk:type_char(char c) // type the character `c` (uses current scancode map).
+// mhk:type_string(string s) // sequentially type all characters in `s`.
+// mhk:set_scancode_map(string path) // load and use scancode map at `path`.
+// mhk:is_key_pressed(key k) -> bool // check if key `k` is pressed.
+// mhk:key_to_char(key k) -> char // map `k` to its char in the scancode map.
+// mhk:char_to_key(char c) -> key // map `c` to its first key in scancode map.
+// ```
+
+defun echo(key k) {
+    mhk:press_key(k)
+    mhk:release_key(k)
+}
+
+// register a key callback function.
+// `echo` will be called when a key is pressed, with the pressed key passed as
+// the argument.
+register key_press echo
+
+// callback functions can be registered for the following events:
+// `key_press`: called whenever a key is pressed - args: `(key k)`.
+// `key_release`: called whenever a key is released - args: `(key k)`.
+// `init`: called when manual-hotkey begins executing your program.
+// `quit`: called when manual-hotkey stops executing your program.
+
+// manual-hotkey does not load a default scancode map for the keyboard, you must
+// load one yourself on `init`.
+
+defun load_scancode_map {
+    mhk:set_scancode_map("scancode-maps/colemak")
+}
+
+register init load_scancode_map
+
+// manual-hotkey has no "default" method of program termination, you must create
+// a callback to handle is as you wish.
+// the following inbuilt functions are used for program termination:
+// ```
+// mhk:quit_ // run all registered `quit` callbacks and terminate program.
+// mhk:panic // instantly terminate program, use only for unrecoverable errors.
+// ```
+
+// by default, a bunch of constants are also defined, and may be used as
+// read-only variables in your code.
+// these constants are prefixed with `mhkc:`.
+// letter key constants:
+// ```
+// mhkc:key_a
+// mhkc:key_b
+// mhkc:key_c
+// mhkc:key_d
+// etc.
+// ```
+
+defun quit_hotkey(key k) {
+    if k == mhkc:key_q {
+        mhk:quit_()
+    }
+}

@@ -1,0 +1,33 @@
+#ifndef PARSE_H__
+#define PARSE_H__
+
+#include "util/dynarr.h"
+
+enum node_type {
+    NODE_TYPE_ROOT,
+    NODE_TYPE_FUNCTION,
+    NODE_TYPE_REGISTRY,
+    NODE_TYPE_BLOCK,
+    NODE_TYPE_VARIABLE,
+    NODE_TYPE_EXPRESSION,
+
+    // expression node types.
+    NODE_TYPE_EXPR_FUNCTION_CALL,
+    NODE_TYPE_EXPR_VARIABLE_LOOKUP,
+    NODE_TYPE_EXPR_UNOP_NEGATE,
+    NODE_TYPE_EXPR_BINOP_POWER,
+    NODE_TYPE_EXPR_BINOP_MULTIPLY,
+    NODE_TYPE_EXPR_BINOP_DIVIDE,
+    NODE_TYPE_EXPR_BINOP_ADD,
+    NODE_TYPE_EXPR_BINOP_SUBTRACT,
+    NODE_TYPE_EXPR_BINOP_AND,
+    NODE_TYPE_EXPR_BINOP_OR,
+    NODE_TYPE_EXPR_BINOP_ASSIGN,
+};
+
+struct node {
+    enum node_type type;
+    struct dynarr children, tokens;
+};
+
+#endif
