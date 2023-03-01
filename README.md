@@ -1,6 +1,4 @@
-# manual-hotkey
-
-![manual-hotkey logo](repo-res/mhk_logo_128.png)
+![manual-hotkey logo and title](repo-res/mhk_title.png)
 
 ## Introduction
 An AutoHotkey alternative for Linux with its own scripting language. Since AHK
