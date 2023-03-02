@@ -13,6 +13,7 @@ static char const *node_type_names[NODE_TYPE_LAST__] = {
     "expr_function_call",
     "expr_variable_lookup",
     "expr_unop_negate",
+    "expr_unop_log_negate",
     "expr_binop_power",
     "expr_binop_multiply",
     "expr_binop_divide",
@@ -34,9 +35,9 @@ struct node node_create(enum node_type type)
 
 void node_destroy(struct node *n)
 {
-    for (size_t i = 0; i < n->children.size; ++i)
+    for (size_t i = 0; i < n->children.size; ++i) 
         node_destroy(dynarr_get_mut(&n->children, i));
-
+    
     dynarr_destroy(&n->children);
     destroy_token_dynarr(&n->toks);
 }
