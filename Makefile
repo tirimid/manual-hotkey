@@ -13,6 +13,6 @@ $(OUT_BIN_NAME): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(LIB_DIR)/%.o: $(SRC_DIR)/%.c
-	mkdir -p $@
-	rmdir $@
+	@ mkdir -p $@
+	@ rmdir $@
 	$(CC) $(CFLAGS) -o $@ $<

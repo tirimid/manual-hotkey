@@ -11,6 +11,7 @@
 #define SPECIAL_COUNT (TOKEN_TYPE_LAST__ - TOKEN_TYPE_SPECIAL_FIRST__ + 1)
 
 // quick and simple notation for defining lexer rules.
+// use this to make explicit that a function is a lexer rule.
 // the following variables are provided to the block of a lexer rule:
 // `char const *src`: the source code as a string.
 // `size_t src_len`: the length of the source code.
@@ -22,6 +23,7 @@
 static char const specials[SPECIAL_COUNT] = "`~!@#$%^&*-=+;:|,./?\n()[]{}<>\0";
 
 static char const *token_type_names[TOKEN_TYPE_LAST__] = {
+    "eof",
     "identifier",
     "integer_literal",
     "float_literal",
@@ -93,6 +95,14 @@ static char const *keywords[KEYWORD_COUNT] = {
     "if",
 };
 
+char const *token_type_name(enum token_type type)
+{
+    if (type < 0 || type >= TOKEN_TYPE_LAST__)
+        ERROR_F("cannot get name of `token_type` with value %d!", type);
+
+    return token_type_names[type];
+}
+
 void token_destroy(struct token *tok)
 {
     free(tok->conts);
@@ -100,7 +110,7 @@ void token_destroy(struct token *tok)
 
 void token_print(struct token const *tok)
 {
-    printf("token.type  = %s\n", token_type_names[tok->type]);
+    printf("token.type  = %s\n", token_type_name(tok->type));
     printf("token.line  = %d\n", tok->line);
     printf("token.col   = %d\n", tok->col);
     printf("token.len   = %d\n", tok->len);

@@ -6,7 +6,9 @@
 #include "util/dynarr.h"
 
 enum token_type {
-    TOKEN_TYPE_IDENTIFIER = 0,
+    TOKEN_TYPE_EOF = 0,
+    
+    TOKEN_TYPE_IDENTIFIER,
 
     // literal types.
     TOKEN_TYPE_INTEGER_LITERAL,
@@ -83,6 +85,8 @@ struct token {
     size_t line, col, len;
     char *conts;
 };
+
+char const *token_type_name(enum token_type type);
 
 void token_destroy(struct token *tok);
 void token_print(struct token const *tok);

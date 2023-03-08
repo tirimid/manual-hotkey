@@ -10,6 +10,7 @@ enum node_type {
     NODE_TYPE_ROOT,
     
     NODE_TYPE_FUNCTION,
+    NODE_TYPE_FUNCTION_ARGLIST,
     NODE_TYPE_REGISTRY,
     NODE_TYPE_BLOCK,
     NODE_TYPE_VARIABLE,
@@ -17,6 +18,7 @@ enum node_type {
 
     // expression node types.
     NODE_TYPE_EXPR_FUNCTION_CALL,
+    NODE_TYPE_EXPR_MHK_FUNCTION_CALL,
     NODE_TYPE_EXPR_VARIABLE_LOOKUP,
     NODE_TYPE_EXPR_UNOP_NEGATE,
     NODE_TYPE_EXPR_UNOP_LOG_NEGATE,
@@ -42,6 +44,8 @@ struct node {
     enum node_type type;
     struct dynarr children, toks;
 };
+
+char const *node_type_name(enum node_type type);
 
 struct node node_create(enum node_type type);
 void node_destroy(struct node *n);

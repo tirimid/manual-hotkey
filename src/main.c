@@ -11,8 +11,7 @@
 #include "util/log.h"
 #include "lang/pp.h"
 #include "lang/lex.h"
-
-static bool running = true;
+#include "lang/parse.h"
 
 int main(int argc, char const *argv[])
 {
@@ -44,8 +43,10 @@ int main(int argc, char const *argv[])
 
     struct dynarr toks = lex(src.data, src.len);
     dynstr_destroy(&src);
-    print_token_dynarr(&toks);
+
+    struct node ast = parse(&toks);
     destroy_token_dynarr(&toks);
+    node_print(&ast);
 
     // run the program.
 #if 0
@@ -55,6 +56,8 @@ int main(int argc, char const *argv[])
     keys_quit();
     map_quit();
 #endif
+
+    node_destroy(&ast);
     
     return 0;
 }
