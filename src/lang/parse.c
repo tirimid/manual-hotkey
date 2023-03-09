@@ -8,13 +8,9 @@
 #include "util/dynstr.h"
 #include "util/gu.h"
 
-// quick and simple notation for defining parser rules.
-// use this to make explicit that a function is a parser rule.
-// the following variables are provided to the block of a parser rule:
-// `struct dynarr const *toks`: the tokens passed to `parse()`.
-// `size_t *tok_ind`: mutable pointer to the current index in `toks`.
-#define PARSER_RULE(rule_name) \
-    static struct node rule_name(struct dynarr const *toks, size_t *tok_ind)
+// use this macro to make it explicit that a function is a parser rule.
+// to use it, simply place it as the return type of the relevant function.
+#define PARSER_RULE static struct node
 
 static char const *node_type_names[NODE_TYPE_LAST__] = {
     "root",
@@ -97,12 +93,17 @@ void node_print(struct node const *n)
     node_print_real(n, 0);
 }
 
+static struct token const *consume(struct dynarr const *toks, size_t *tok_ind)
+{
+    return dynarr_get(toks, ++*tok_ind);
+}
+
 static struct token const *expect_many(struct dynarr const *toks,
                                        size_t *tok_ind,
                                        enum token_type const expected[],
                                        size_t expected_size)
 {
-    struct token const *tok = dynarr_get(toks, (*tok_ind)++);
+    struct token const *tok = dynarr_get(toks, ++*tok_ind);
     for (size_t i = 0; i < expected_size; ++i) {
         if (tok->type == expected[i])
             return tok;
@@ -128,7 +129,7 @@ static struct token const *expect_many(struct dynarr const *toks,
 static struct token const *expect(struct dynarr const *toks, size_t *tok_ind,
                                   enum token_type expected)
 {
-    struct token const *tok = dynarr_get(toks, (*tok_ind)++);
+    struct token const *tok = dynarr_get(toks, ++*tok_ind);
     if (tok->type != expected) {
         ERROR_F("(l=%d,c=%d) expected %s but found %s!", tok->line, tok->col,
                 token_type_name(expected), token_type_name(tok->type));
@@ -150,45 +151,80 @@ static struct token const *current(struct dynarr const *toks, size_t tok_ind)
 // tokens:
 // [n for all even n >= 0]: type of argument.
 // [n for all odd n >= 0]:  name of argument.
-PARSER_RULE(parse_function_arglist)
+PARSER_RULE parse_function_arglist(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_FUNCTION_ARGLIST);
 
-    for (; current(toks, *tok_ind)->type != TOKEN_TYPE_RIGHT_PAREN; ++*tok_ind);
-    ++*tok_ind;
-    
-    return node;
+    while (true) {
+        enum token_type exp0[] = {
+            TOKEN_TYPE_KEYWORD_INT,
+            TOKEN_TYPE_KEYWORD_FLOAT,
+            TOKEN_TYPE_KEYWORD_CHAR,
+            TOKEN_TYPE_KEYWORD_STRING,
+            TOKEN_TYPE_KEYWORD_KEY,
+            TOKEN_TYPE_KEYWORD_BOOL,
+        };
+        
+        struct token const *type, *var_name;
+        type = expect_many(toks, tok_ind, exp0, ARRAY_SIZE(exp0));
+        var_name = expect(toks, tok_ind, TOKEN_TYPE_IDENTIFIER);
+
+        node_add_token(&node, type);
+        node_add_token(&node, var_name);
+
+        enum token_type exp1[] = {
+            TOKEN_TYPE_COMMA,
+            TOKEN_TYPE_RIGHT_PAREN,
+        };
+
+        switch (expect_many(toks, tok_ind, exp1, ARRAY_SIZE(exp1))->type) {
+        case TOKEN_TYPE_COMMA:
+            continue;
+        case TOKEN_TYPE_RIGHT_PAREN:
+            return node;
+        }
+    }
 }
 
 // children:
 // [*]: either a variable declaration, control flow statement, or expression.
-PARSER_RULE(parse_block)
+PARSER_RULE parse_block(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_BLOCK);
 
-    for (; current(toks, *tok_ind)->type != TOKEN_TYPE_RIGHT_BRACE; ++*tok_ind);
-    ++*tok_ind;
-    
-    return node;
+    while (true) {
+        switch (consume(toks, tok_ind)->type) {
+        case TOKEN_TYPE_LEFT_BRACE: {
+            struct node sub_block = parse_block(toks, tok_ind);
+            node_add_child(&node, &sub_block);
+            break;
+        }
+        case TOKEN_TYPE_RIGHT_BRACE:
+            return node;
+        default:
+            break;
+        }
+    }
 }
 
 // tokens:
 // [0]:   name of function.
 // ([1]): return type of function.
 // children:
-// [0]: argument list.
-// [1]: code block.
-PARSER_RULE(parse_function)
+// ([0]): argument list.
+// [1]:   code block.
+PARSER_RULE parse_function(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_FUNCTION);
 
     node_add_token(&node, expect(toks, tok_ind, TOKEN_TYPE_IDENTIFIER));
-    if (current(toks, *tok_ind)->type == TOKEN_TYPE_LEFT_PAREN) {
+    if (peek(toks, *tok_ind)->type == TOKEN_TYPE_LEFT_PAREN) {
+        consume(toks, tok_ind);
         struct node arglist = parse_function_arglist(toks, tok_ind);
         node_add_child(&node, &arglist);
     }
 
-    if (current(toks, *tok_ind)->type == TOKEN_TYPE_HYPHEN) {
+    if (peek(toks, *tok_ind)->type == TOKEN_TYPE_HYPHEN) {
         expect(toks, tok_ind, TOKEN_TYPE_HYPHEN);
         expect(toks, tok_ind, TOKEN_TYPE_RIGHT_ANGLE);
         
@@ -214,7 +250,7 @@ PARSER_RULE(parse_function)
 // tokens:
 // [0]: registry event.
 // [1]: name of function being registered.
-PARSER_RULE(parse_registry)
+PARSER_RULE parse_registry(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_REGISTRY);
 

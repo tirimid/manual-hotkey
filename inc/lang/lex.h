@@ -6,7 +6,8 @@
 #include "util/dynarr.h"
 
 enum token_type {
-    TOKEN_TYPE_EOF = 0,
+    TOKEN_TYPE_SOF = 0,
+    TOKEN_TYPE_EOF,
     
     TOKEN_TYPE_IDENTIFIER,
 

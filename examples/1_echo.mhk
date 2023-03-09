@@ -85,8 +85,8 @@ register init load_scancode_map
 // ```
 
 defun quit_hotkey(key k) {
-//  commented out for parser testing.
-//  if k == mhkc:key_q {
-//      mhk:quit_()
-//  }
+    commented out for parser testing.
+    if k == mhkc:key_q {
+        mhk:quit_()
+    }
 }
