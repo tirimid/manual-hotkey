@@ -23,7 +23,6 @@
 static uint8_t *key_data;
 static void (**press_handlers)(void), (**release_handlers)(void);
 static int key_fd;
-static bool running = false;
 static pthread_t keys_thread;
 
 static int open_key_input(int flags)
@@ -73,15 +72,15 @@ exit:
     return rc;
 }
 
-static void *main_loop(void *args)
+static void main_loop(void *args)
 {
-    while (running) {
+    for (;;) {
         struct input_event ie;
         read(key_fd, &ie, sizeof(ie));
         
         if (ie.type != EV_KEY)
             continue;
-    
+        
         size_t byte = ie.code / 8, bit = ie.code % 8;
         uint8_t *datum = &key_data[byte];
         *datum &= ~(1 << bit);
@@ -92,8 +91,6 @@ static void *main_loop(void *args)
         else if (ie.value == 1 && press_handlers[ie.code] != NULL)
             press_handlers[ie.code]();
     }
-    
-    return NULL;
 }
 
 void keys_init(void)
@@ -108,17 +105,19 @@ void keys_init(void)
     memset(press_handlers, 0, KEY_HANDLER_BUF_SIZE);
     memset(release_handlers, 0, KEY_HANDLER_BUF_SIZE);
 
-    running = true;
-    int rc = pthread_create(&keys_thread, NULL, main_loop, NULL);
+    void *(*ml)(void *) = (void *(*)(void *))main_loop;
+    int rc = pthread_create(&keys_thread, NULL, ml, NULL);
     if (rc != 0)
         ERROR_F("failed to create keys thread! error %d", rc);
 }
 
 void keys_quit(void)
 {
-    running = false;
-    int rc = pthread_join(keys_thread, NULL);
+    int rc = pthread_cancel(keys_thread);
     if (rc != 0)
+        ERROR_F("failed to cancel keys thread! error %d", rc);
+    
+    if ((rc = pthread_join(keys_thread, NULL)) != 0)
         ERROR_F("failed to join keys thread! error %d", rc);
     
     free(key_data);

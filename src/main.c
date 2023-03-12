@@ -8,6 +8,7 @@
 
 #include "input/keys.h"
 #include "input/map.h"
+#include "input/mouse.h"
 #include "util/log.h"
 #include "lang/pp.h"
 #include "lang/lex.h"
@@ -16,6 +17,10 @@
 int main(int argc, char const *argv[])
 {
     log_init();
+
+    map_init();
+    keys_init();
+    mouse_init();
     
     if (getuid() != 0)
         ERROR("you must run the program as root!");
@@ -48,16 +53,14 @@ int main(int argc, char const *argv[])
     destroy_token_dynarr(&toks);
     node_print(&ast);
 
-    // run the program.
-#if 0
-    map_init();
-    keys_init();
+    node_destroy(&ast);
 
+    // run the program.
+    // ...
+    
+    mouse_quit();
     keys_quit();
     map_quit();
-#endif
-
-    node_destroy(&ast);
     
     return 0;
 }

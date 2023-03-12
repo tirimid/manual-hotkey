@@ -9,5 +9,5 @@ LD := gcc
 
 # compile with `-DLOG_DEBUG` if you want `util/log.c` functions to output the
 # line number (of C source files) on which they occur.
-CFLAGS = -I$(INC_DIR) -c -std=c99 -pedantic
-LDFLAGS = -lpthread
+CFLAGS = -I$(INC_DIR) -c -std=c99 -pedantic -pthread
+LDFLAGS = -lpthread -pthread
