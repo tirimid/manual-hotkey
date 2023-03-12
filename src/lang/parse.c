@@ -2,7 +2,6 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "util/log.h"
 #include "util/dynstr.h"
@@ -155,7 +154,7 @@ PARSER_RULE parse_function_arglist(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_FUNCTION_ARGLIST);
 
-    while (true) {
+    for (;;) {
         enum token_type exp0[] = {
             TOKEN_TYPE_KEYWORD_INT,
             TOKEN_TYPE_KEYWORD_FLOAT,
@@ -192,7 +191,7 @@ PARSER_RULE parse_block(struct dynarr const *toks, size_t *tok_ind)
 {
     struct node node = node_create(NODE_TYPE_BLOCK);
 
-    while (true) {
+    for (;;) {
         switch (consume(toks, tok_ind)->type) {
         case TOKEN_TYPE_LEFT_BRACE: {
             struct node sub_block = parse_block(toks, tok_ind);
@@ -273,7 +272,7 @@ struct node parse(struct dynarr const *toks)
     struct node ast = node_create(NODE_TYPE_ROOT);
     size_t tok_ind = 0;
 
-    while (true) {
+    for (;;) {
         enum token_type exp[] = {
             TOKEN_TYPE_EOF,
             TOKEN_TYPE_LINEFEED,
