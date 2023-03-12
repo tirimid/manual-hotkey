@@ -10,18 +10,15 @@
 #define KEYWORD_COUNT (TOKEN_TYPE_KEYWORD_LAST__ - TOKEN_TYPE_KEYWORD_FIRST__)
 #define SPECIAL_COUNT (TOKEN_TYPE_LAST__ - TOKEN_TYPE_SPECIAL_FIRST__ + 1)
 
-// quick and simple notation for defining lexer rules.
-// the following variables are provided to the block of a lexer rule:
-// `char const *src`: the source code as a string.
-// `size_t src_len`: the length of the source code.
-// `size_t start`: index to the start of the token in `src`.
-#define LEXER_RULE(rule_name) static struct token rule_name(char const *src, \
-                                                            size_t src_len, \
-                                                            size_t start)
+// use this macro to make it explicit that a function is a lexer rule.
+// to use it, simply place it as the return type of the relevant function.
+#define LEXER_RULE static struct token
 
 static char const specials[SPECIAL_COUNT] = "`~!@#$%^&*-=+;:|,./?\n()[]{}<>\0";
 
 static char const *token_type_names[TOKEN_TYPE_LAST__] = {
+    "sof",
+    "eof",
     "identifier",
     "integer_literal",
     "float_literal",
@@ -93,6 +90,14 @@ static char const *keywords[KEYWORD_COUNT] = {
     "if",
 };
 
+char const *token_type_name(enum token_type type)
+{
+    if (type < 0 || type >= TOKEN_TYPE_LAST__)
+        ERROR_F("cannot get name of `token_type` with value %d!", type);
+
+    return token_type_names[type];
+}
+
 void token_destroy(struct token *tok)
 {
     free(tok->conts);
@@ -100,7 +105,7 @@ void token_destroy(struct token *tok)
 
 void token_print(struct token const *tok)
 {
-    printf("token.type  = %s\n", token_type_names[tok->type]);
+    printf("token.type  = %s\n", token_type_name(tok->type));
     printf("token.line  = %d\n", tok->line);
     printf("token.col   = %d\n", tok->col);
     printf("token.len   = %d\n", tok->len);
@@ -171,28 +176,28 @@ void destroy_token_dynarr(struct dynarr *tl)
     dynarr_destroy(tl);
 }
 
-LEXER_RULE(lex_identifier)
+LEXER_RULE lex_identifier(char const *src, size_t src_len, size_t start)
 {
     size_t end = start + 1;
     for (; end < src_len && (isalnum(src[end]) || src[end] == '_'); ++end);
     return build_token(TOKEN_TYPE_IDENTIFIER, src, start, end);
 }
 
-LEXER_RULE(lex_string_literal)
+LEXER_RULE lex_string_literal(char const *src, size_t src_len, size_t start)
 {
     size_t end = start + 1;
     for (; end < src_len && (src[end] != '"' || src[end - 1] == '\\'); ++end);
     return build_token(TOKEN_TYPE_STRING_LITERAL, src, start, end + 1);
 }
 
-LEXER_RULE(lex_char_literal)
+LEXER_RULE lex_char_literal(char const *src, size_t src_len, size_t start)
 {
     size_t end = start + 1;
     for (; end < src_len && (src[end] != '\'' || src[end - 1] == '\\'); ++end);
     return build_token(TOKEN_TYPE_CHAR_LITERAL, src, start, end + 1);
 }
 
-LEXER_RULE(lex_number_literal)
+LEXER_RULE lex_number_literal(char const *src, size_t src_len, size_t start)
 {
     size_t end = start + 1;
     for (; end < src_len && (isdigit(src[end]) || src[end] == '.'); ++end);
@@ -209,7 +214,7 @@ LEXER_RULE(lex_number_literal)
     return build_token(type, src, start, end);
 }
 
-LEXER_RULE(lex_special_char)
+LEXER_RULE lex_special_char(char const *src, size_t src_len, size_t start)
 {
     size_t end = start + 1;
     size_t special_ind = strchr(specials, src[start]) - specials;
@@ -230,6 +235,16 @@ static enum token_type disambiguate_identifier(char const *tok_conts)
 struct dynarr lex(char const *src, size_t src_len)
 {
     struct dynarr tl = dynarr_create(sizeof(struct token));
+
+    // add SOF.
+    struct token seek = {
+        .type = TOKEN_TYPE_SOF,
+        .line = 0,
+        .col = 0,
+        .len = 0,
+        .conts = NULL,
+    };
+    dynarr_push(&tl, &seek);
     
     // first pass: get source into tokens.
     size_t i = 0;
@@ -265,6 +280,16 @@ struct dynarr lex(char const *src, size_t src_len)
         if (tok->type == TOKEN_TYPE_IDENTIFIER)
             tok->type = disambiguate_identifier(tok->conts);
     }
+
+    // add EOF.
+    seek = (struct token){
+        .type = TOKEN_TYPE_EOF,
+        .line = 0,
+        .col = 0,
+        .len = 0,
+        .conts = NULL,
+    };
+    dynarr_push(&tl, &seek);
 
     return tl;
 }

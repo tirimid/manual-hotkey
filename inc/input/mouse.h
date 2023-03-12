@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 enum mouse_btn {
-    MOUSE_BTN_LEFT,
+    MOUSE_BTN_LEFT = 0,
     MOUSE_BTN_RIGHT,
     MOUSE_BTN_MIDDLE,
 };
@@ -16,6 +16,8 @@ void mouse_quit(void);
 bool mouse_is_pressed(enum mouse_btn btn);
 void mouse_set_press_handler(enum mouse_btn btn, void (*handler)(void));
 void mouse_set_release_handler(enum mouse_btn btn, void (*handler)(void));
+void mouse_set_move_handler(void (*handler)(void));
+void mouse_set_rel_move_handler(void (*handler)(void));
 void mouse_position(uint16_t *out_x, uint16_t *out_y);
 
 void mouse_press(enum mouse_btn btn);

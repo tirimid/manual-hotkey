@@ -1,0 +1,41 @@
+defun expressions {
+    // expressions are composed of variables, function calls, and operators.
+    // the following operators exist in mhkscript:
+    //
+    // precedence group 8 (highest):
+    // `-`  : negation         : RTL.
+    // `!`  : logical negation : RTL.
+    //
+    // precedence group 7:
+    // `**` : power            : RTL.
+    //
+    // precedence group 6:
+    // `*`  : multiplication   : LTR.
+    // `/`  : division         : LTR.
+    //
+    // precedence group 5:
+    // `+`  : addition         : LTR.
+    // `-`  : subtraction      : LTR.
+    //
+    // precedence group 4:
+    // `>`  : greater          : LTR.
+    // `>=` : greater or equal : LTR.
+    // `<`  : less             : LTR.
+    // `<=` : less or equal    : LTR.
+    //
+    // precedence group 3:
+    // `==` : equal            : LTR.
+    // `!=` : not equal        : LTR.
+    //
+    // precedence group 2:
+    // `&&` : logical AND      : LTR.
+    //
+    // precedence group 1:
+    // `||` : logical OR       : LTR.
+    //
+    // precedence group 0 (lowest):
+    // `=`  : assignment       : RTL.
+    //
+    // if you wish to override precedence, use the `()` parentheses.
+    // most of the above operators are made to mirror their behavior in C.
+}

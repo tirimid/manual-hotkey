@@ -6,6 +6,12 @@ struct dynstr preprocess(char const *src, size_t src_len)
     
     // stage 1: remove comments.
     for (size_t i = 0; i < src_len - 1; ++i) {
+        // do not remove `//`s in string literals.
+        if (src[i] == '"') {
+            for (++i; i < src_len && src[i] != '"'; ++i);
+            continue;
+        }
+        
         if (src[i] == '/' && src[i + 1] == '/')
             for (; i < src_len && src[i] != '\n'; ++i);
 
